@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - name: "Check out code"
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
         with: 
           fetch-depth: 0
 
@@ -20,7 +20,7 @@ jobs:
           go-version: 1.15
 
       - name: "Create release on GitHub"
-        uses: goreleaser/goreleaser-action@v2.7.0
+        uses: goreleaser/goreleaser-action@v2.8.0
         env: 
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with: 

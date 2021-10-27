@@ -53,7 +53,7 @@
 - **Proxy IP rotator**: Rotates your IP address for every specific request.
 - **Proxy checker**: Check your proxy IP which is still alive.
 - **All HTTP/S methods** are supported.
-- **HTTP & SOCKSv5** proxy protocols apply.
+- **HTTP, SOCKS v4(A) & v5** proxy protocols apply.
 - **All parameters & URIs are passed**.
 - **Easy to use**: You can just run it against your proxy file, and choose the action you want!
 - **Cross-platform**: whether you are Windows, Linux, Mac, or even Raspberry Pi, you can run it very well.
@@ -136,6 +136,7 @@ Here are all the options it supports.
 | -c, --check                   	| To perform proxy live check.                                 	|
 | -t, --timeout                 	| Max. time allowed for proxy server/check (default: 30s).      |
 | -r, --rotate `<AFTER>`        	| Rotate proxy IP for every `AFTER` request (default: 1).       |
+| -m, --method `<METHOD>`        	| Rotation method (sequent/random) (default: sequent).          |
 | -v, --verbose                 	| Dump HTTP request/responses or show died proxy on check.      |
 | -o, --output <FILE>           	| Log output from proxy server or live check.          	        |
 | -u, --update                  	| Update mubeng to the latest stable version.          	        |
@@ -146,10 +147,10 @@ Here are all the options it supports.
 		<h4>NOTES:</h4>
 		<ul>
 			<li>Rotations are counted for all requests, even if the request fails.
-				<ul>
+				<!-- <ul>
 					<li>The rotation is incremental starting at the beginning of the list.</li>
-					<!-- <li>Rotation means random, <b>NOT</b> choosing a proxy after/increment from proxy pool. We do not set up conditions if a proxy has been used. So, there is no guarantee if your request reaches the <i>N</i> value <code>(-r/--rotate)</code> your IP proxy will rotate.</li> -->
-				</ul>
+					<li>Rotation means random, <b>NOT</b> choosing a proxy after/increment from proxy pool. We do not set up conditions if a proxy has been used. So, there is no guarantee if your request reaches the <i>N</i> value <code>(-r/--rotate)</code> your IP proxy will rotate.</li>
+				</ul> -->
 			</li>
 			<li>Daemon mode <code>(-d/--daemon)</code> will install mubeng as a service on the (Linux/OSX) system/setting up callback (Windows).
 				<ul>
@@ -181,6 +182,7 @@ For example, you've proxy pool `(proxies.txt)` as:
 <table>
 	<td>
 		<pre>http://127.0.0.1:8080
+socks4://127.0.0.1:4145
 socks5://127.0.0.1:2121
 ...
 ...</pre>
@@ -210,10 +212,10 @@ The above case also uses `--output` flag to save a live proxy into file `(live.t
 Furthermore, if you wish to do proxy IP rotator from proxies that are still alive earlier from the results of checking `(live.txt)` _(or if you have your own list)_, you must use `-a` _(--address)_ flag instead to run proxy server:
 
 ```bash
-▶ mubeng -a localhost:8089 -f live.txt -r 10
+▶ mubeng -a localhost:8089 -f live.txt -r 10 -m random
 ```
 
-The `-r` _(--rotate)_ flag works to rotate your IP for every _N_ request value you provide `(10)`.
+The `-r` _(--rotate)_ flag works to rotate your IP for every _N_ request value you provide `(10)`, and the `-m` _(--method)_ flag will rotate the proxy sequential/randomly.
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25837540/108269526-b3ca0780-71a0-11eb-986c-f8e98bab8433.jpg">
@@ -245,7 +247,7 @@ Select **Tools** in the menu bar in your ZAP session window, then select the **O
 
 # Limitations
 
-Currently IP rotation runs the proxy server only as an HTTP protocol, not a SOCKSv5 protocol, even though the resource you have is SOCKSv5. In other words, the SOCKSv5 resource that you provide is used properly because it uses auto-switch transport on the client, but this proxy server **DOES NOT** switch to anything other than HTTP protocol.
+Currently IP rotation runs the proxy server only as an HTTP protocol, not a SOCKSv4/v5 protocol, even though the resource you have is SOCKSv4/v5. In other words, the SOCKSv4/v5 resource that you provide is used properly because it uses auto-switch transport on the client, but this proxy server **DOES NOT** switch to anything other than HTTP protocol.
 
 # Contributors
 
