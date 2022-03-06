@@ -19,8 +19,13 @@ func Options() *common.Options {
 	flag.StringVar(&opt.Address, "a", "", "")
 	flag.StringVar(&opt.Address, "address", "", "")
 
+	flag.StringVar(&opt.Auth, "A", "", "")
+	flag.StringVar(&opt.Auth, "auth", "", "")
+
 	flag.BoolVar(&opt.Check, "c", false, "")
 	flag.BoolVar(&opt.Check, "check", false, "")
+
+	flag.StringVar(&opt.CC, "only-cc", "", "")
 
 	flag.DurationVar(&opt.Timeout, "t", 30*time.Second, "")
 	flag.DurationVar(&opt.Timeout, "timeout", 30*time.Second, "")
