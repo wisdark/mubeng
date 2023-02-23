@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -39,12 +39,11 @@ func (p *Proxy) onRequest(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Reque
 	}
 
 	rotate = helper.EvalFunc(rotate)
-	resChan := make(chan *http.Response)
-	errChan := make(chan error, 1)
+	resChan := make(chan interface{})
 
 	go func() {
 		if (req.URL.Scheme != "http") && (req.URL.Scheme != "https") {
-			errChan <- fmt.Errorf("Unsupported protocol scheme: %s", req.URL.Scheme)
+			resChan <- fmt.Errorf("Unsupported protocol scheme: %s", req.URL.Scheme)
 			return
 		}
 
@@ -52,7 +51,7 @@ func (p *Proxy) onRequest(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Reque
 
 		tr, err := mubeng.Transport(rotate)
 		if err != nil {
-			errChan <- err
+			resChan <- err
 			return
 		}
 
@@ -69,30 +68,36 @@ func (p *Proxy) onRequest(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Reque
 
 		resp, err := client.Do(req)
 		if err != nil {
-			errChan <- err
+			resChan <- err
 			return
 		}
 		defer resp.Body.Close()
 
-		// Copying response body
-		buf, err := ioutil.ReadAll(resp.Body)
+		buf, err := io.ReadAll(resp.Body)
 		if err != nil {
-			errChan <- err
+			resChan <- err
 			return
 		}
 
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
+		resp.Body = io.NopCloser(bytes.NewBuffer(buf))
+
 		resChan <- resp
 	}()
 
-	select {
-	case err := <-errChan:
-		log.Errorf("%s %s", req.RemoteAddr, err)
-		return req, goproxy.NewResponse(req, mime, http.StatusBadGateway, "Proxy server error")
-	case resp := <-resChan:
+	var resp *http.Response
+
+	res := <-resChan
+	switch res := res.(type) {
+	case *http.Response:
+		resp = res
 		log.Debug(req.RemoteAddr, " ", resp.Status)
-		return req, resp
+	case error:
+		err := res
+		log.Errorf("%s %s", req.RemoteAddr, err)
+		resp = goproxy.NewResponse(req, mime, http.StatusBadGateway, "Proxy server error")
 	}
+
+	return req, resp
 }
 
 // onConnect handles CONNECT method
