@@ -8,7 +8,7 @@
 <p align="center">
 	<a href="#"><img src="https://img.shields.io/badge/kitabisa-security%20project-blue"></a>
 	<a href="https://golang.org"><img src="https://img.shields.io/badge/made%20with-Go-brightgreen"></a>
-	<a href="https://goreportcard.com/report/ktbs.dev/mubeng"><img src="https://goreportcard.com/badge/ktbs.dev/mubeng"></a>
+	<a href="https://goreportcard.com/report/github.com/kitabisa/mubeng"><img src="https://goreportcard.com/badge/github.com/kitabisa/mubeng"></a>
 	<a href="https://github.com/kitabisa/mubeng/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-yellowgreen"></a>
 	<a href="#"><img src="https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green"></a>
 	<a href="https://github.com/kitabisa/mubeng/releases"><img src="https://img.shields.io/github/release/kitabisa/mubeng"></a>
@@ -18,7 +18,7 @@
 <p align="center">
   <a href="https://github.com/kitabisa/mubeng/blob/master/.github/CONTRIBUTING.md">Contributing</a> •
   <a href="https://github.com/kitabisa/mubeng/blob/master/CHANGELOG.md">What's new</a> •
-  <a href="https://pkg.go.dev/ktbs.dev/mubeng/pkg/mubeng">Documentation</a> •
+  <a href="https://pkg.go.dev/github.com/kitabisa/mubeng/pkg/mubeng">Documentation</a> •
   <a href="https://github.com/kitabisa/mubeng/issues/new/choose">Report Issues</a>
 </p>
 
@@ -91,15 +91,11 @@ Pull the [Docker](https://docs.docker.com/get-docker/) image by running:
 
 ## Source
 
-Using [Go _(v1.19)_](https://golang.org/doc/install) compiler:
+Using [Go](https://golang.org/doc/install) compiler:
 
 ```bash
-▶ GO111MODULE=on go get -u ktbs.dev/mubeng/cmd/mubeng
+▶ go install -v github.com/kitabisa/mubeng/cmd/mubeng@latest
 ```
-
-<table>
-	<td><b>NOTE:</b> The same command above also works for updating.</td>
-</table>
 
 ### — or
 
@@ -109,8 +105,7 @@ Manual building executable from source code:
 ▶ git clone https://github.com/kitabisa/mubeng
 ▶ cd mubeng
 ▶ make build
-▶ (sudo) mv ./bin/mubeng /usr/local/bin
-▶ make clean
+▶ (sudo) install ./bin/mubeng /usr/local/bin
 ```
 
 # Usage
@@ -118,7 +113,7 @@ Manual building executable from source code:
 For usage, it's always required to provide your proxy list, whether it is used to check or as a proxy pool for your proxy IP rotation.
 
 <center>
-  <a href="#"><img alt="kitabisa mubeng" src="https://user-images.githubusercontent.com/25837540/180201570-4b8f3609-4285-4f27-9dff-e1d0e06c4413.png" width="50%"></a>
+  <a href="#"><img alt="kitabisa mubeng" src="https://github.com/user-attachments/assets/3c19e328-cfd7-43f7-bf83-b3996671fc67" width="80%"></a>
 </center>
 
 ## Basic
@@ -142,10 +137,18 @@ Here are all the options it supports.
 | -A, --auth `<USER>:<PASS>`      | Set authorization for proxy server.                           |
 | -d, --daemon                    | Daemonize proxy server.                                       |
 | -c, --check                     | To perform proxy live check.                                  |
-| -g, --goroutine `<N>`           | Max. goroutine to use (default: 10).                          |
+| -g, --goroutine `<N>`           | Max. goroutine to use (default: 50).                          |
 |     --only-cc `<AA>,<BB>`       | Only show specific country code (comma separated).            |
 | -t, --timeout                   | Max. time allowed for proxy server/check (default: 30s).      |
 | -r, --rotate `<AFTER>`          | Rotate proxy IP for every `AFTER` request (default: 1).       |
+|     --rotate-on-error           | Rotate proxy IP and retry failed HTTP requests.               |
+|     --remove-on-error           | Remove proxy IP from proxy pool on failed HTTP requests.      |
+|     --max-errors `<N>`          | Max. errors allowed during rotation (default: 3).             |
+|                                 | Use this with `--rotate-on-error`.                            |
+|                                 | If value is less than 0 (e.g., -1), rotation will             |
+|                                 | continue indefinitely.                                        |
+|     --max-redirs `<N>`          | Max. redirects allowed (default: 10).                         |
+|     --max-retries `<N>`         | Max. retries for failed HTTP requests (default: 0).           |
 | -m, --method `<METHOD>`         | Rotation method (sequent/random) (default: sequent).          |
 | -s, --sync                      | Sync will wait for the previous request to complete.          |
 | -v, --verbose                   | Dump HTTP request/responses or show died proxy on check.      |
@@ -184,6 +187,13 @@ Here are all the options it supports.
 					<li>Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", and "h".</li>
 				</ul>
 			</li>
+			<li>The max. errors <code>(--max-errors)</code> ≠ max. retries <code>(--max-retries)</code>.</li>
+			<ul>
+					<li>The max. retries <code>(--max-retries)</code> apply to retrying a failed HTTP request with the same proxy.</li>
+					<li>Meanwhile, max. errors <code>(--max-errors)</code> refer to the total failed HTTP requests from the proxies used.</li>
+					<li>For example, once the max. retries <code>(--max-retries)</code> are reached <i>(if supplied)</i>, the error is counted, and the proxy IP will rotate for the same failed HTTP request until the max. errors <code>(--max-errors)</code> are reached, whereas max. retries <code>(--max-retries)</code> <b>DO NOT</b> trigger a proxy rotation.</li>
+				</ul>
+			<li>If the value of max. errors <code>(--max-errors)</code> is less than <b>0</b> (e.g. <b>-1</b>), rotation will continue indefinitely.</li>
 		</ul>
 	</td>
 </table>
@@ -210,7 +220,7 @@ socks5://127.0.0.1:2121
 </table>
 
 > Because we use auto-switch transport, `mubeng` can accept multiple proxy protocol schemes at once.<br>
-> Please refer to [documentation](https://pkg.go.dev/ktbs.dev/mubeng/pkg/mubeng#Transport) for this package.
+> Please refer to [documentation](https://pkg.go.dev/github.com/kitabisa/mubeng/pkg/mubeng#Transport) for this package.
 
 ### Proxy checker
 
@@ -223,7 +233,7 @@ Pass `--check` flag in command to perform proxy checks:
 The above case also uses `--output` flag to save a live proxy of specific country code with `--only-cc` flag (`ISO-3166` alpha-2) into file _(live.txt)_ from checking result.
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/25837540/108407803-cd2d8b00-7256-11eb-8560-f0c99042c970.png">
+  <img src="https://github.com/user-attachments/assets/97b9e5ad-64bd-403a-bd3a-1bc4eb7fb3f1" height="400"><br />
   <i>(Figure: Checking proxies mubeng with max. 5s timeout)</i>
 </p>
 
@@ -238,7 +248,7 @@ Furthermore, if you wish to do proxy IP rotator from proxies that are still aliv
 The `-r` _(--rotate)_ flag works to rotate your IP for every _N_ request value you provide `(10)`, and the `-m` _(--method)_ flag will rotate the proxy sequential/randomly.
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/25837540/108269526-b3ca0780-71a0-11eb-986c-f8e98bab8433.jpg">
+  <img src="https://github.com/user-attachments/assets/b86a5bf4-41e6-43ac-8077-9f82442e9577">
   <i>(Figure: Running mubeng as proxy IP rotator with verbose mode)</i>
 </p>
 

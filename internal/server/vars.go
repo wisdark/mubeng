@@ -9,10 +9,8 @@ import (
 )
 
 var (
-	rotate  string
 	handler *Proxy
 	server  *http.Server
-	client  *http.Client
 	dump    *httpretty.Logger
 	mime    = "text/plain"
 	log     *logo.Logger

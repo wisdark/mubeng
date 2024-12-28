@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"ktbs.dev/mubeng/pkg/helper"
-	"ktbs.dev/mubeng/pkg/mubeng"
+	"github.com/kitabisa/mubeng/pkg/helper"
+	"github.com/kitabisa/mubeng/pkg/mubeng"
 )
 
 // ProxyManager defines the proxy list and current proxy position
@@ -50,7 +50,8 @@ func New(filename string) (*ProxyManager, error) {
 		}
 	}
 
-	manager.Length = len(manager.Proxies)
+	manager.Count()
+
 	if manager.Length < 1 {
 		return manager, fmt.Errorf("open %s: has no valid proxy URLs", filename)
 	}

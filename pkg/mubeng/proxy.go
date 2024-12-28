@@ -1,9 +1,14 @@
 package mubeng
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
-// Proxy define the IP address value, http.Transport and other additional options.
+// Proxy define the IP address value, [http.Transport] and other additional options.
 type Proxy struct {
-	Address   string
-	Transport *http.Transport
+	Address      string
+	MaxRedirects int
+	Timeout      time.Duration
+	Transport    *http.Transport
 }
